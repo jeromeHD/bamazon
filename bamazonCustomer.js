@@ -17,25 +17,23 @@ var connection = mysql.createConnection({
 
 connection.connect(function(err) {
   if (err) throw err;
-  start();
+  readProducts();
 });
 
-function start() {
-  inquirer
-    .prompt({
-      name: "postOrBid",
-      type: "list",
-      message: "Would you like to [POST] an auction or [BID] on an auction?",
-      choices: ["POST", "BID", "EXIT"]
-    })
-    .then(function(answer) {
-      // based on their answer, either call the bid or the post functions
-      if (answer.postOrBid === "POST") {
-        postAuction();
-      } else if (answer.postOrBid === "BID") {
-        bidAuction();
-      } else {
-        connection.end();
-      }
+function readProducts() {
+  connection.query("SELECT * FROM products", function(err, rows) {
+    if (err) throw err;
+    rows.forEach(function(result) {
+      console.log(
+        "item_id: " +
+          result.item_id +
+          " || product_name: " +
+          result.product_name +
+          " || price: " +
+          result.price +
+          " || stock_quantity: " +
+          result.stock_quantity
+      );
     });
+  });
 }
