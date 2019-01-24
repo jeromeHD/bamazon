@@ -18,6 +18,7 @@ var connection = mysql.createConnection({
 connection.connect(function(err) {
   if (err) throw err;
   readProducts();
+  selectItem();
 });
 
 function readProducts() {
@@ -36,4 +37,37 @@ function readProducts() {
       );
     });
   });
+}
+
+function selectItem() {
+  //   connection.query("SELECT * FROM products", function(err, results) {
+  //     if (err) throw err;
+  inquirer
+    .prompt([
+      {
+        name: "choice",
+        type: "rawlist",
+        choices: function() {
+          var choiceArray = [];
+          for (var i = 0; i < results.length; i++) {
+            choiceArray.push(results[i].item_id);
+          }
+          return choiceArray;
+        },
+        message: "What is the ID of the item you would like to purschase?"
+      },
+      {
+        name: "select",
+        type: "input",
+        mesage: "How many would you like to buy?"
+      }
+    ])
+    .then(function(answer) {
+      var chosenId;
+      for (var i = 0; i < results.length; i++) {
+        if (results[i].item_id === answer.choice) {
+          chosenId = results[i];
+        }
+      }
+    });
 }
