@@ -17,8 +17,6 @@ var connection = mysql.createConnection({
 
 connection.connect(function(err) {
   if (err) throw err;
-  readProducts();
-  selectItem();
 });
 
 function readProducts() {
@@ -36,38 +34,83 @@ function readProducts() {
           result.stock_quantity
       );
     });
+    placeOrder();
   });
 }
-
-function selectItem() {
-  //   connection.query("SELECT * FROM products", function(err, results) {
-  //     if (err) throw err;
+function placeOrder() {
   inquirer
     .prompt([
       {
-        name: "choice",
-        type: "rawlist",
-        choices: function() {
-          var choiceArray = [];
-          for (var i = 0; i < results.length; i++) {
-            choiceArray.push(results[i].item_id);
+        name: "item_Id",
+        message: "Please enter the ID of the item you wish to purchase",
+        validate: function(value) {
+          var valid = value.match(/^[0-15]+$/);
+          if (valid) {
+            return true;
           }
-          return choiceArray;
-        },
-        message: "What is the ID of the item you would like to purschase?"
+          return "Please enter a valid Item ID";
+        }
       },
       {
-        name: "select",
-        type: "input",
-        mesage: "How many would you like to buy?"
+        name: "stock_quantity",
+        message: "How many of this item would you like to order?",
+        validate: function(value) {
+          var valid = value.match(/^[0-160]+$/);
+          if (valid) {
+            return true;
+          }
+          return "Please enter a numerical value";
+        }
+      }
+    ])
+    .then(
+      function(answer) {
+        connection.query("SELECT * FROM products WHERE id = ?", [answer.item_id], function(err, res) {
+          if (answer.selectQuantity > res[0].stock_quantity) {
+            console.log("Insufficient Quantity, your order has been cancelled!");
+            newOrder();
+          } else {
+            amountOwed = res[0].Price * answer.selectQuantity;
+            // currentDepartment = res[0].DepartmentName;
+            console.log("Thanks for your order");
+            console.log("You owe $" + amountOwed);
+            console.log("");
+            //update products table
+            connection.query(
+              "UPDATE products SET ? Where ?",
+              [
+                {
+                  stock_quantity: res[0].stock_quantity - answer.selectQuantity
+                },
+                {
+                  id: answer.item_id
+                }
+              ],
+              function(err, res) {}
+            );
+            newOrder();
+          }
+        });
+      },
+      function(err, res) {}
+    );
+}
+function newOrder() {
+  inquirer
+    .prompt([
+      {
+        type: "confirm",
+        name: "choice",
+        message: "Would you like to place another order?"
       }
     ])
     .then(function(answer) {
-      var chosenId;
-      for (var i = 0; i < results.length; i++) {
-        if (results[i].item_id === answer.choice) {
-          chosenId = results[i];
-        }
+      if (answer.choice) {
+        placeOrder();
+      } else {
+        console.log("Thank you for shopping at Bamazon!");
+        connection.end();
       }
     });
 }
+readProducts();
