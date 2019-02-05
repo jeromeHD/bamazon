@@ -42,9 +42,9 @@ function placeOrder() {
     .prompt([
       {
         name: "item_Id",
-        message: "Please enter the ID of the item you wish to purchase",
+        message: "Please enter the ID of the item you wish to purchase.",
         validate: function(value) {
-          var valid = value.match(/^[0-15]+$/);
+          var valid = value.match(/^[0-9]+$/);
           if (valid) {
             return true;
           }
@@ -55,7 +55,7 @@ function placeOrder() {
         name: "stock_quantity",
         message: "How many of this item would you like to order?",
         validate: function(value) {
-          var valid = value.match(/^[0-160]+$/);
+          var valid = value.match(/^[0-9]+$/);
           if (valid) {
             return true;
           }
@@ -65,13 +65,14 @@ function placeOrder() {
     ])
     .then(
       function(answer) {
-        connection.query("SELECT * FROM products WHERE id = ?", [answer.item_id], function(err, res) {
+        console.log("ans", answer);
+
+        connection.query("SELECT * FROM products WHERE item_id = ?", [answer.item_Id], function(err, res) {
           if (answer.selectQuantity > res[0].stock_quantity) {
             console.log("Insufficient Quantity, your order has been cancelled!");
             newOrder();
           } else {
-            amountOwed = res[0].Price * answer.selectQuantity;
-            // currentDepartment = res[0].DepartmentName;
+            amountOwed = res[0].price * answer.stock_quantity;
             console.log("Thanks for your order");
             console.log("You owe $" + amountOwed);
             console.log("");
