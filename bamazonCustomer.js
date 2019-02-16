@@ -24,7 +24,7 @@ function readProducts() {
     if (err) throw err;
     rows.forEach(function(result) {
       console.log(
-        "item_id: " +
+        "id: " +
           result.item_id +
           " || product_name: " +
           result.product_name +
@@ -81,7 +81,7 @@ function placeOrder() {
               "UPDATE products SET ? Where ?",
               [
                 {
-                  stock_quantity: res[0].stock_quantity - answer.selectQuantity
+                  stock_quantity: res[0].stock_quantity - answer.stockQuantity
                 },
                 {
                   id: answer.item_id
